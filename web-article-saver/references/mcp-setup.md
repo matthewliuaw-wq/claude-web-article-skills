@@ -4,28 +4,32 @@ web-article-saver 依赖两个 MCP Server。首次使用前请确认以下配置
 
 ## 1. Playwright MCP Server（必需）
 
-用于打开网页、滚动页面、提取实际加载的图片 URL。
+用于打开网页、滚动页面、提取实际加载的图片/视频 URL；**更是登录墙 / 反爬源（如 X 长文章 `x.com/i/article/*`）抓正文的唯一可靠手段**——用 `browser_snapshot` 读正文、`browser_evaluate` 取图。详见 SKILL.md「⭐ 登录墙 / 反爬源」一节。
 
-**安装：**
+**安装（推荐，实测有效）：** 用 Claude Code 自带 CLI 注册（user 作用域，所有项目可用）：
 
 ```bash
-npm install -g @playwright/mcp@latest
+claude mcp add playwright -s user -- npx -y @playwright/mcp@latest
 ```
 
-**配置：** 在项目根目录或用户目录的 `.mcp.json` 中添加：
+> ⚠️ 装完**必须重启 Claude Code**——MCP server 只在启动时加载，本会话装了也不生效。
+
+**验证：** `claude mcp list` 应看到 `playwright ... ✔ Connected`；重启后在会话里有 `browser_navigate` / `browser_snapshot` 等 `browser_*` 工具即可。
+
+**备选（手动配置 .mcp.json）：** 若不用 CLI，在项目根或用户目录的 `.mcp.json` 加：
 
 ```json
 {
   "mcpServers": {
     "playwright": {
       "command": "npx",
-      "args": ["@playwright/mcp@latest"]
+      "args": ["-y", "@playwright/mcp@latest"]
     }
   }
 }
 ```
 
-**验证：** 在 CC 中输入任何涉及浏览器的操作，如果出现 `browser_navigate`、`browser_snapshot` 等工具提示，说明配置成功。
+**重要：登录墙 / 反爬源只能用 MCP 的 `browser_*`，别手写 node 脚本 Playwright。** 实测手写脚本（`launchPersistentContext`，无论无头/有头/CDP 连真机 Chrome）会被 X 反爬挡死；MCP 浏览器指纹不同，能通过。
 
 ## 2. web_reader MCP Server（必需）
 
